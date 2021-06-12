@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=18.0", "wheel"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+filterwarnings = "ignore::DeprecationWarning"
+python_files = ["test_*"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["scxml_to_c"]
