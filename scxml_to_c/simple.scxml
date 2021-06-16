@@ -24,6 +24,8 @@
                                          soil[0] &lt;= soil[1] &amp;&amp;
                                          soil[0] &lt;= soil[2] &amp;&amp;
                                          soil[0] &lt;= soil[3]" target="pump1" />
+          <transition event="pump1" target="pump1" />
+          <transition event="pump1" cond="COOLER" target="pump1" />
           <transition event="pump2" cond="soil[1] &lt; 0 &amp;&amp;
                                          soil[1] &lt;= soil[0] &amp;&amp;
                                          soil[1] &lt;= soil[2] &amp;&amp;

@@ -43,7 +43,12 @@ class StateMachine():
 
         # get the events
         transitions = root.findall('.//transition')
-        self.events = [transition.get('event') for transition in transitions]
+        events = []
+        for transition in transitions:
+            event = transition.get('event').upper()
+            if event not in events:
+                events.append(event)
+        self.events = events
 
         self.states = get_states(root)
 
@@ -55,8 +60,8 @@ class StateMachine():
                       typedef=True)
 
         # add the event enum
-        event_e.add_value(events[0], 1)
-        for event in events[1:]:
+        event_e.add_value(self.events[0], 1)
+        for event in self.events[1:]:
             event_e.add_value(event)
         header.add_lines(ENUM_DEC_LINES)
         header.add_line()
@@ -115,6 +120,7 @@ class StateMachine():
 
         # global variables
         src.add_lines(GLOBAL_DEC_LINES)
+        
         src.add_line()
 
         # functions
@@ -144,7 +150,7 @@ class StateMachine():
 if __name__ == "__main__":
     # do something
     machine = StateMachine("simple.scxml", "inverter")
-
+    # print(machine.make_header())
     print(machine.make_source())
 
 
