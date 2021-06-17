@@ -1,16 +1,19 @@
 from lxml import etree
 from csnake import (CodeWriter, Enum, Struct, Variable, Function, Arrow)
-from scxml_to_c.comments import (ENUM_DEC_LINES, 
-                                 STRUCT_DEC_LINES, 
-                                 EXTERNAL_FUN_PROTO_DEC_LINES, 
-                                 INC_DEC_LINES, 
-                                 FUN_PROTO_DEC_LINES, 
-                                 GLOBAL_DEC_LINES, 
+from scxml_to_c.comments import (ENUM_DEC_LINES,
+                                 STRUCT_DEC_LINES,
+                                 EXTERNAL_FUN_PROTO_DEC_LINES,
+                                 INC_DEC_LINES,
+                                 FUN_PROTO_DEC_LINES,
+                                 GLOBAL_DEC_LINES,
                                  FUN_DEC_LINES)
 from scxml_to_c.state_mapper import generate_state_globals
 import argparse
 import scxml_to_c.helpers as helpers
-from scxml_to_c.builders import build_function_prototype, build_state_handler
+from scxml_to_c.builders import (build_function_prototype,
+                                 build_state_handler,
+                                 build_state_entry_handler,
+                                 build_state_exit_handler)
 import sys
 import os
 
@@ -73,7 +76,7 @@ def make_source(name, root, hierarchical=False):
     code.include("<stdbool.h>")
     code.add_line()
     code.include('"hsm.h"')
-    code.include('"demo.h"')
+    code.include(f'"{name}.h"')
     code.add_line()
 
     # find all of the states
@@ -84,6 +87,7 @@ def make_source(name, root, hierarchical=False):
     for state in all_states:
         state_function_prototype = build_function_prototype(state)
         code.add_lines(state_function_prototype)
+        code.add_line()
 
     # global variables
     code.add_lines(GLOBAL_DEC_LINES)
@@ -104,11 +108,18 @@ def make_source(name, root, hierarchical=False):
                  f'{event} = 0')
     init_fun.add_code(fun_code)
     code.add_function_definition(init_fun)
+    code.add_line()
 
     # state function handlers
     for state in all_states:
         state_handler = build_state_handler(state, hierarchical)
         code.add_function_definition(state_handler)
+        if helpers.has_entry(state):
+            entry_handler = build_state_entry_handler(state)
+            code.add_function_definition(entry_handler)
+        if helpers.has_exit(state):
+            exit_handler = build_state_exit_handler(state)
+            code.add_function_definition(exit_handler)
         code.add_line()
 
     return code
@@ -129,13 +140,17 @@ def convert():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-s', '--scxml', action="store", help='SCXML source file', required=True)
-    parser.add_argument('-o', '--output-filename', action="store", help='Name of output file', required=True)  #TODO:  Consider making this optional, as we can grab a default name from SCXML file
+    parser.add_argument('-o', '--output-filename', action="store", help='Name of output file', required=False)
     parser.add_argument('-d', '--directory', action="store", help='Target directory for output files', type=dir_path, required=False)
 
     opts = parser.parse_args()
     scxml = opts.scxml
     name = opts.output_filename
     directory = opts.directory
+
+    # if a name isn't provided, just use the source filename for the base of the output files
+    if name is None:
+        name = os.path.basename(scxml).split('.')[0]
 
     # passe the SCXML file
     tree = etree.parse(scxml)

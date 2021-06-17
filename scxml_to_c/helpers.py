@@ -2,6 +2,12 @@ from csnake import TextModifier
 
 NULL = TextModifier("NULL")
 
+def has_entry(state):
+    return state.find('onentry') is not None
+
+def has_exit(state):
+    return state.find('onexit') is not None
+
 def get_parent_state(state):
     parent_element = state.getparent()
     if parent_element is not None:

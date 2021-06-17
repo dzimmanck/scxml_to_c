@@ -1,7 +1,7 @@
 
 from lxml import etree
 from csnake import (CodeWriter, Enum, Struct, Variable, Function, Arrow, VariableValue, AddressOf, TextModifier)
-from scxml_to_c.helpers import get_transitions, get_parent_state, NULL
+from scxml_to_c.helpers import get_transitions, get_parent_state, NULL, has_entry, has_exit
 from scxml_to_c.functions import switch_state, traverse_state
 
 pstate_machine_t = Variable("const", "state_machine_t *")
@@ -14,16 +14,18 @@ def build_function_prototype(state, hierarchical=False):
                     return_type="state_machine_result_t", 
                     arguments=(pstate_machine_t,))
     code.add_function_prototype(fun)
-    fun = Function(name=f'{name}_entry_handler', 
-                    qualifiers="static",
-                    return_type="state_machine_result_t", 
-                    arguments=(pstate_machine_t,))
-    code.add_function_prototype(fun)
-    fun = Function(name=f'{name}_exit_handler', 
-                    qualifiers="static",
-                    return_type="state_machine_result_t", 
-                    arguments=(pstate_machine_t,))
-    code.add_function_prototype(fun)
+    if has_entry(state):
+        fun = Function(name=f'{name}_entry_handler', 
+                        qualifiers="static",
+                        return_type="state_machine_result_t", 
+                        arguments=(pstate_machine_t,))
+        code.add_function_prototype(fun)
+    if has_exit(state):
+        fun = Function(name=f'{name}_exit_handler', 
+                        qualifiers="static",
+                        return_type="state_machine_result_t", 
+                        arguments=(pstate_machine_t,))
+        code.add_function_prototype(fun)
     code.add_line()
     return code
 
@@ -56,6 +58,30 @@ def build_state_variable(element, level=None):
                               )
 
     return state_t
+
+def build_state_entry_handler(element):
+    state_name = element.get('id')
+    function_name = f'{state_name}_entry_handler'
+    p = Variable('pState', 'state_machine_t *', "const")
+    handler_function = Function(name=function_name, 
+                                return_type='state_machine_result_t', 
+                                arguments=(p,))
+
+    lines = ('/* TODO */',)  # TODO: Add code for interpreting on-entry element into C code
+    handler_function.add_code(lines)
+    return handler_function
+
+def build_state_exit_handler(element):
+    state_name = element.get('id')
+    function_name = f'{state_name}_exit_handler'
+    p = Variable('pState', 'state_machine_t *', "const")
+    handler_function = Function(name=function_name, 
+                                return_type='state_machine_result_t', 
+                                arguments=(p,))
+
+    lines = ('/* TODO */',)  # TODO: Add code for interpreting on-entry element into C code
+    handler_function.add_code(lines)
+    return handler_function
 
 def build_state_handler(element, hierarchical=False):
     state_name = element.get('id')
