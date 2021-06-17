@@ -25,5 +25,10 @@ setup(
                         "pytest-benchmark",
                         "tox",
                         "coverage[toml]"]},
-    python_requires=">=3.6"
+    python_requires=">=3.6",
+    entry_points={
+            'console_scripts': [
+                'scxml_to_c = scxml_to_c.main:_convert',
+            ]
+    }
 )
