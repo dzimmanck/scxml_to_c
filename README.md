@@ -16,12 +16,12 @@ pip install scxml_to_c
 
 ## Usage
 ```
-> scxml -s <path to scxml file> -o <name of output files> -d <directory for output files>
+> scxml -s <path to scxml_to_c file> -o <name of output files> -d <directory for output files>
 ```
 
 The output name and directory are optional arguments.  If you leave out both, the tool will use the scxml filename to generate the name of the .c and .h files and will output them to the current directory.  For example, the following command will generate awesome.h and awesome.c in the current directory.
 ```
-~/develop/awesome_project/src$ scxml -s awesome.scxml
+~/develop/awesome_project/src$ scxml_to_c -s awesome.scxml
 ```
 
 
