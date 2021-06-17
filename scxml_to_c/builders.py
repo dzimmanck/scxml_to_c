@@ -1,13 +1,64 @@
 
 from lxml import etree
-from csnake import (CodeWriter, Enum, Struct, Variable, Function, Arrow, VariableValue, AddressOf)
-from scxml_to_c.helpers import get_transitions, get_ancestors
+from csnake import (CodeWriter, Enum, Struct, Variable, Function, Arrow, VariableValue, AddressOf, TextModifier)
+from scxml_to_c.helpers import get_transitions, get_parent_state, NULL
 from scxml_to_c.functions import switch_state, traverse_state
-from csnake.cconstructs import generate_c_value_initializer
+
+pstate_machine_t = Variable("const", "state_machine_t *")
+
+def build_function_prototype(state, hierarchical=False):
+    name = state.get('id')
+    code = CodeWriter()
+    fun = Function(name=f'{name}_handler', 
+                    qualifiers="static",
+                    return_type="state_machine_result_t", 
+                    arguments=(pstate_machine_t,))
+    code.add_function_prototype(fun)
+    fun = Function(name=f'{name}_entry_handler', 
+                    qualifiers="static",
+                    return_type="state_machine_result_t", 
+                    arguments=(pstate_machine_t,))
+    code.add_function_prototype(fun)
+    fun = Function(name=f'{name}_exit_handler', 
+                    qualifiers="static",
+                    return_type="state_machine_result_t", 
+                    arguments=(pstate_machine_t,))
+    code.add_function_prototype(fun)
+    code.add_line()
+    return code
 
 
-def build_state_handler(node, hierarchical=False):
-    state_name = node.get('id')
+def build_state_variable(element, level=None):
+    state_name = element.get('id')
+
+    # if level is None, this is a finite (non-hierarchical state)
+    if level is None:
+        state_t = Variable(name=state_name,
+                       primitive='state_t',
+                       qualifiers=['static', 'const'],
+                       value={'Handler': TextModifier(f'{state_name}_handler'),
+                              'Entry': TextModifier(f'{state_name}_entry'),
+                              'Exit': TextModifier(f'{state_name}_exit')})
+        return state_t
+
+    # hierarchical state defintion needs more info
+    Parent = TextModifier(f'&{get_parent_state(element)}') if level else NULL
+    Node = TextModifier(f'&children_of_{state_name}') if element.find('state') is not None else NULL
+    state_t = Variable(name=state_name,
+                       primitive='state_t',
+                       qualifiers=['static', 'const'],
+                       value={'Handler': TextModifier(f'{state_name}_handler'),
+                              'Entry': TextModifier(f'{state_name}_entry'),
+                              'Exit': TextModifier(f'{state_name}_exit'),
+                              'Parent': Parent,
+                              'Node': Node,
+                              'Level': level}
+                              )
+
+    return state_t
+
+def build_state_handler(element, hierarchical=False):
+    state_name = element.get('id')
     function_name = f'{state_name}_handler'
 
     p = Variable('pState', 'state_machine_t *', "const")
@@ -16,7 +67,7 @@ def build_state_handler(node, hierarchical=False):
                                 arguments=(p,))
 
     # create a list of transitions and unique events
-    transitions = get_transitions(node)
+    transitions = get_transitions(element)
     events = []
     for transition in transitions:
         event = transition.get('event')
@@ -91,12 +142,11 @@ def build_state_handler(node, hierarchical=False):
 if __name__ == "__main__":
     tree = etree.parse('simple.scxml')
     root = tree.getroot()
-    print(dir(root))
     all_states = [child for child in root.iter('state')]
-    print(all_states)
     code = CodeWriter()
     for state in all_states:
         state_handler = build_state_handler(state, True)
         code.add_function_definition(state_handler)
         code.add_line()
+
     print(code)

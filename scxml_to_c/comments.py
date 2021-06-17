@@ -6,6 +6,11 @@ STRUCT_DEC_LINES = ("/*",
                   " *  --------------------- STRUCTURE ---------------------",
                   " */")
 
+
+EXTERNAL_FUN_PROTO_DEC_LINES = ("/*",
+                  " *  --------------------- External function prototype ---------------------",
+                  " */")
+
 INC_DEC_LINES = ("/*",
                   " *  --------------------- INCLUDE FILES ---------------------",
                   " */")
