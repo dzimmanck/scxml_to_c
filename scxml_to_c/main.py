@@ -72,8 +72,8 @@ def make_source(name, root, hierarchical=False):
     code.include("<stdio.h>")
     code.include("<stdbool.h>")
     code.add_line()
-    code.add_line('"hsm.h"')
-    code.add_line('"demo.h"')
+    code.include('"hsm.h"')
+    code.include('"demo.h"')
     code.add_line()
 
     # find all of the states
