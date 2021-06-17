@@ -1,7 +1,7 @@
 # scxml_to_c
 SCXML to ANSI-C converter for transforming state charts into efficient C code written entirely in Python.  It is designed to work with [UML-State-Machine-in-C](https://github.com/kiishor/UML-State-Machine-in-C), which serves as a lightweight state machine framework with the scxml_to_c generating the scaffolding for a specific state machine implementation.
 
-!! This code is a work in progress, and is not yet functional.  Its getting close though.
+:warning: This code is a work in progress, and is not yet functional.  Its getting close though.
 
 ## Motivation
 The project was started in response to an embedded switch/case based state machine that, over the course of 5 years of feature creep-morphed into a 2000+ loc monster.  It has the following ethos:
