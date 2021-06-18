@@ -1,4 +1,5 @@
 from csnake import TextModifier
+from lxml import etree
 
 NULL = TextModifier("NULL")
 
@@ -58,8 +59,7 @@ def get_states(node, prefix=''):
         return [prefix]
 
     return states
-
-
+    
 
 if __name__ == "__main__":
     from lxml import etree

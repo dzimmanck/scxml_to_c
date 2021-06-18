@@ -152,9 +152,15 @@ def convert():
     if name is None:
         name = os.path.basename(scxml).split('.')[0]
 
-    # passe the SCXML file
+    # parse the SCXML file
     tree = etree.parse(scxml)
     root = tree.getroot()
+    
+    # strip the namespace from the elements
+    for elem in root.getiterator():
+        prefix, has_namespace, postfix = elem.tag.partition('}')
+        if has_namespace:
+            elem.tag = postfix
 
     # get the number of levels
     num_levels = helpers.find_num_levels(root) - 1  # subtract 1 because we don't count the root as a level
